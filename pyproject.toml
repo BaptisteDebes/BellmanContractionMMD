@@ -1,0 +1,67 @@
+[project]
+name = "mmd-contraction"
+version = "0.1.0"
+description = "Numerical core of the paper's experiments: radial kernels and contraction thresholds of finite supports."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    # The versions of the numerical packages the paper's results were computed with.
+    "numpy==2.4.3",
+    "scipy==1.16.0",
+    "mpmath==1.3.0",
+    "jax==0.8.0",
+    "jaxlib==0.8.0",
+    "matplotlib==3.9.1",
+    # Array shape and type annotations, checked at run time by beartype in the tests.
+    "jaxtyping==0.3.11",
+    "beartype==0.23.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest==9.1.1",
+    "pyright==1.1.414",
+    "ruff==0.17.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mmd_contraction"]
+
+[tool.ruff]
+line-length = 100
+src = [".", "tests"]
+# Only the new package, the paper figure and experiment scripts and the tests are linted. The
+# historical experiment sources stay as they are, and documents must never be rewritten by a
+# formatter.
+include = [
+    "mmd_contraction/**/*.py",
+    "paper_figures/**/*.py",
+    "experiments/**/*.py",
+    "tests/**/*.py",
+]
+extend-exclude = ["*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+# F722: jaxtyping shape strings such as "points dimension" look like syntax errors to ruff.
+ignore = ["F722"]
+
+[tool.pyright]
+include = ["mmd_contraction", "paper_figures", "experiments", "tests"]
+typeCheckingMode = "strict"
+pythonVersion = "3.12"
+# JAX's own signatures contain unknown types (e.g. `jnp.asarray(..., device=...)`). In
+# strict mode these spread into every call site as "partially unknown" errors. Only these
+# four rules are relaxed; our own parameters and returns must still be annotated.
+reportUnknownMemberType = false
+reportUnknownArgumentType = false
+reportUnknownVariableType = false
+reportUnknownLambdaType = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# The repository root, so that the tests can import experiments/ as `experiments`
+pythonpath = ["."]
